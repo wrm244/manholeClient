@@ -188,13 +188,10 @@ class _VlcPlayerScreenState extends State<VlcPlayerScreen> {
       autoPlay: true,
       hwAcc: HwAcc.full,
       options: VlcPlayerOptions(
-        extras: [
-        '--no-embedded-video',
-        '--no-audio',
-        '--no-drop-late-frames',
-        '--skip-frames',
-        '--rtsp-tcp',
-      ],
+        advanced: VlcAdvancedOptions([
+          VlcAdvancedOptions.liveCaching(1000),
+          VlcAdvancedOptions.networkCaching(1000)
+        ]),
       ),
     );
   }
