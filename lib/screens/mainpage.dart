@@ -17,7 +17,10 @@ class _Mainpage extends State<Mainpage> {
   String? debugLable = 'Unknown';
   bool isLoading = true; // 控制加载指示器显示
   late List<Camera> cameras = [];
+  int selectedCameraID = 1;
+  bool changeVedio = false;
   final JPush jpush = JPush();
+
   @override
   void initState() {
     super.initState();
@@ -102,18 +105,21 @@ class _Mainpage extends State<Mainpage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            cameras.isNotEmpty
+            cameras.isNotEmpty && !changeVedio
                 ? Column(
                     children: [
                       Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("摄像头ID: ${cameras[0].cameraID}",
+                            Text(
+                                "摄像头ID: ${cameras[selectedCameraID - 1].cameraID}",
                                 style: const TextStyle(fontSize: 15)),
-                            Text("    地点: ${cameras[0].location}",
+                            Text(
+                                "    地点: ${cameras[selectedCameraID - 1].location}",
                                 style: const TextStyle(fontSize: 15)),
                           ]),
-                      VlcPlayerScreen(videoUrl: cameras[0].url),
+                      VlcPlayerScreen(
+                          videoUrl: cameras[selectedCameraID - 1].url),
                     ],
                   )
                 : const CircularProgressIndicator(), // 加载指示器
@@ -122,7 +128,7 @@ class _Mainpage extends State<Mainpage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 CustomButton(
-                  title: "发本地推送",
+                  title: "测试推送",
                   onPressed: () {
                     {
                       // 0.5秒后出发本地推送
@@ -192,6 +198,22 @@ class _Mainpage extends State<Mainpage> {
                 ),
               ],
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CameraSelectionButton(
+                  // 摄像头选择按钮
+                  cameras: cameras,
+                  onCameraSelected: (selectedCamera) {
+                    // 选择摄像头后更新视图
+                    setState(() {
+                      changeVedio = !changeVedio;
+                      selectedCameraID = int.parse(selectedCamera);
+                    });
+                  },
+                ),
+              ],
+            )
           ],
         ),
       ),
@@ -213,8 +235,10 @@ class CustomButton extends StatelessWidget {
       onPressed: onPressed,
       style: ButtonStyle(
         foregroundColor: MaterialStateProperty.all(Colors.white),
-        overlayColor: MaterialStateProperty.all(const Color(0xff888888)),
-        backgroundColor: MaterialStateProperty.all(const Color(0xff585858)),
+        overlayColor:
+            MaterialStateProperty.all(Color.fromARGB(255, 22, 95, 206)),
+        backgroundColor:
+            MaterialStateProperty.all(const Color.fromARGB(193, 7, 62, 180)),
         padding:
             MaterialStateProperty.all(const EdgeInsets.fromLTRB(10, 5, 10, 5)),
       ),
@@ -226,8 +250,9 @@ class CustomButton extends StatelessWidget {
 class VlcPlayerScreen extends StatefulWidget {
   final String videoUrl;
 
-  VlcPlayerScreen({required this.videoUrl});
+  const VlcPlayerScreen({super.key, required this.videoUrl});
   @override
+  // ignore: library_private_types_in_public_api
   _VlcPlayerScreenState createState() => _VlcPlayerScreenState();
 }
 
@@ -264,5 +289,83 @@ class _VlcPlayerScreenState extends State<VlcPlayerScreen> {
   void dispose() {
     super.dispose();
     _controller.dispose();
+  }
+}
+
+class CameraSelectionButton extends StatefulWidget {
+  final List<Camera> cameras; // 摄像头URL列表
+  final Function(String) onCameraSelected; // 回调函数，用于选择摄像头
+
+  CameraSelectionButton(
+      {required this.cameras, required this.onCameraSelected});
+
+  @override
+  _CameraSelectionButtonState createState() => _CameraSelectionButtonState();
+}
+
+class _CameraSelectionButtonState extends State<CameraSelectionButton> {
+  String selectedCamera = '';
+
+  void _showCameraSelectionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16.0),
+              color: Colors.white,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '选择摄像头',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 5.0),
+                for (int i = 0; i < widget.cameras.length; i++)
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        selectedCamera = widget.cameras[i].cameraID.toString();
+                      });
+                      Navigator.of(context).pop(); // 关闭对话框
+                      widget.onCameraSelected(selectedCamera);
+                    },
+                    child: ListTile(
+                      title: Text(
+                          '监控ID:${i + 1}    地点:${widget.cameras[i].location}'),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            _showCameraSelectionDialog(context);
+          },
+          child: const Text('选择摄像头'),
+        ),
+      ],
+    );
   }
 }
