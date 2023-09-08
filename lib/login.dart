@@ -1,6 +1,10 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'mainpage.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 导入shared_preferences包
+import 'database.dart';
+import 'package:mysql1/mysql1.dart';
 
 class SignInPage2 extends StatelessWidget {
   const SignInPage2({Key? key}) : super(key: key);
@@ -182,9 +186,30 @@ class __FormContentState extends State<_FormContent> {
                     // 获取SharedPreferences实例
                     SharedPreferences prefs =
                         await SharedPreferences.getInstance();
-
+                    late MySqlConnection conn;
+                    try {
+                      conn = await MySqlConnection.connect(ConnectionSettings(
+                        host: 'server.gxist.cn',
+                        port: 3306,
+                        user: 'manhole',
+                        db: 'manhole',
+                        password: 'WiRxFFiBrTcZ4K58',
+                      ));
+                    } catch (e) {
+                      print('Error connecting to database: $e');
+                    }
+                    bool isUserExists = false;
+                    try {
+                      var result = await conn.query(
+                          'select * from admins where username = ? and password = ?',
+                          [_username, _password]);
+                      isUserExists = result.isNotEmpty;
+                    } catch (e) {
+                      print('Error querying database: $e');
+                      isUserExists = false; // 在发生异常时，假设用户名不存在
+                    }
                     // 检查用户名和密码是否正确
-                    if (_username == 'wrm244' && _password == '778899') {
+                    if (isUserExists) {
                       if (_rememberMe) {
                         prefs.setBool('isLoggedIn', true);
                       } else {
