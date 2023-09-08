@@ -1,5 +1,6 @@
 import 'package:mysql1/mysql1.dart';
 import '../data/wellcoverLog.dart';
+import '../data/camera.dart';
 
 class DatabaseHelper {
   late MySqlConnection _conn;
@@ -15,7 +16,6 @@ class DatabaseHelper {
       ));
       return true;
     } catch (e) {
-      print('Error connecting to database: $e');
       return false;
     }
   }
@@ -27,7 +27,6 @@ class DatabaseHelper {
           [username, password]);
       return result.isNotEmpty;
     } catch (e) {
-      print('Error querying database: $e');
       return false;
     }
   }
@@ -36,7 +35,6 @@ class DatabaseHelper {
     try {
       final result = await _conn.query('SELECT * FROM wellcoverlogs');
       final logs = <WellCoverLog>[];
-      print('result: $result');
       for (var row in result) {
         final log = WellCoverLog(
           logID: row['LogID'],
@@ -53,8 +51,58 @@ class DatabaseHelper {
       }
       return logs;
     } catch (e) {
-      print('Error querying wellcoverlogs table: $e');
       return [];
+    }
+  }
+
+  Future<List<Camera>> getCameras() async {
+    try {
+      final result = await _conn.query('SELECT * FROM cameras');
+      final cameras = <Camera>[];
+      for (var row in result) {
+        final camera = Camera(
+          cameraID: row['CameraID'],
+          cameraName: row['CameraName'],
+          location: row['Location'],
+          description: row['Description'],
+          installationDate: row['InstallationDate'],
+          url: row['url'],
+        );
+        cameras.add(camera);
+      }
+      return cameras;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<int> getUserCount() async {
+    //获取员工数量
+    try {
+      final result = await _conn.query('SELECT COUNT(*) FROM admins');
+      return result.first[0];
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<int> getWellCoverCount() async {
+    //获取井盖数量
+    try {
+      final result = await _conn.query('SELECT COUNT(*) FROM wellcovers');
+      return result.first[0];
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<int> getLogCount() async {
+    //获取井盖日志数量
+    try {
+      final result = await _conn.query('SELECT COUNT(*) FROM wellcoverlogs');
+      return result.first[0];
+    } catch (e) {
+      return 0;
     }
   }
 

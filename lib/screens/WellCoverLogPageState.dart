@@ -35,7 +35,6 @@ class _WellCoverLogPageState extends State<WellCoverLogPage> {
           isLoading = false; // 数据加载完成后停止加载指示器
         });
       } catch (e) {
-        print('Error fetching well cover logs: $e');
         // 显示错误提示
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
@@ -90,10 +89,24 @@ class _WellCoverLogPageState extends State<WellCoverLogPage> {
                   // 添加其他要显示的列
                 ],
                 rows: wellCoverLogs.map((log) {
+                  Color rowColor = Colors.transparent; // 默认背景颜色为透明
+                  // 根据log.status的值设置背景颜色
+                  if (log.status == 1) {
+                    rowColor = const Color.fromARGB(
+                        166, 130, 226, 133); // 井盖识别成功，设置为绿色
+                  } else {
+                    rowColor = const Color.fromRGBO(
+                        241, 134, 126, 0.753); // 井盖丢失，设置为红色
+                  }
                   return DataRow(
+                    color: MaterialStateProperty.resolveWith<Color>(
+                      (Set<MaterialState> states) {
+                        return rowColor; // 返回根据log.status计算的背景颜色
+                      },
+                    ),
                     cells: [
                       DataCell(Text('${log.logID}')),
-                      DataCell(Text(log.status)),
+                      DataCell(Text(log.status == 1 ? '井盖识别成功' : '井盖丢失')),
                       DataCell(Text(log.location ?? '')),
                       DataCell(
                         Text(dateFormatter.format(log.dateTime.toLocal())),

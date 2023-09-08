@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:jpush_flutter/jpush_flutter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
-import 'login.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../services/database.dart';
+import '../data/camera.dart';
 
 class Mainpage extends StatefulWidget {
   const Mainpage({super.key});
@@ -15,11 +15,14 @@ class Mainpage extends StatefulWidget {
 
 class _Mainpage extends State<Mainpage> {
   String? debugLable = 'Unknown';
+  bool isLoading = true; // 控制加载指示器显示
+  late List<Camera> cameras = [];
   final JPush jpush = JPush();
   @override
   void initState() {
     super.initState();
     initPlatformState();
+    fetchCamera();
   }
 
   Future<void> initPlatformState() async {
@@ -52,6 +55,45 @@ class _Mainpage extends State<Mainpage> {
     });
   }
 
+  Future<void> fetchCamera() async {
+    final dbHelper = DatabaseHelper();
+    final isConnected = await dbHelper.connect();
+
+    if (isConnected) {
+      try {
+        final Cameras = await dbHelper.getCameras();
+        setState(() {
+          cameras = Cameras;
+          isLoading = false; // 数据加载完成后停止加载指示器
+        });
+      } catch (e) {
+        // 显示错误提示
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('数据获取失败，请稍后重试'),
+          ),
+        );
+        setState(() {
+          isLoading = false; // 数据加载失败后停止加载指示器
+        });
+      } finally {
+        await dbHelper.closeConnection();
+      }
+    } else {
+      // 显示连接超时提示
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('数据获取超时，请稍后重试'),
+        ),
+      );
+      setState(() {
+        isLoading = false; // 连接超时后停止加载指示器
+      });
+    }
+  }
+
 // 编写视图
   @override
   Widget build(BuildContext context) {
@@ -60,7 +102,21 @@ class _Mainpage extends State<Mainpage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            VlcPlayerScreen(), // 放置VlcPlayer
+            cameras.isNotEmpty
+                ? Column(
+                    children: [
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("摄像头ID: ${cameras[0].cameraID}",
+                                style: const TextStyle(fontSize: 15)),
+                            Text("    地点: ${cameras[0].location}",
+                                style: const TextStyle(fontSize: 15)),
+                          ]),
+                      VlcPlayerScreen(videoUrl: cameras[0].url),
+                    ],
+                  )
+                : const CircularProgressIndicator(), // 加载指示器
             const SizedBox(height: 20), // 增加间距
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -136,26 +192,6 @@ class _Mainpage extends State<Mainpage> {
                 ),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                CustomButton(
-                    onPressed: () async {
-                      // 清除登录状态
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      prefs.setBool('isLoggedIn', false);
-
-                      // 导航回登录页面
-                      // ignore: use_build_context_synchronously
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) =>
-                            (const SignInPage2()), // 这里使用你的登录页面的构建器
-                      ));
-                    },
-                    title: "退出登陆"),
-              ],
-            )
           ],
         ),
       ),
@@ -188,6 +224,9 @@ class CustomButton extends StatelessWidget {
 }
 
 class VlcPlayerScreen extends StatefulWidget {
+  final String videoUrl;
+
+  VlcPlayerScreen({required this.videoUrl});
   @override
   _VlcPlayerScreenState createState() => _VlcPlayerScreenState();
 }
@@ -199,7 +238,7 @@ class _VlcPlayerScreenState extends State<VlcPlayerScreen> {
   void initState() {
     super.initState();
     _controller = VlcPlayerController.network(
-      'http://192.168.3.48:8081/0/stream', // 替换为你的直播流链接
+      widget.videoUrl, // 替换为你的直播流链接
       autoPlay: true,
       hwAcc: HwAcc.full,
       options: VlcPlayerOptions(

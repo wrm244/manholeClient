@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'mainpage.dart';
-import 'login.dart';
 import 'WellCoverLogPageState.dart';
+import 'profile.dart';
 
 class Material3BottomNav extends StatefulWidget {
   const Material3BottomNav({Key? key}) : super(key: key);
@@ -41,7 +41,7 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
                 _appBarTitle = "井盖监控日志";
                 break;
               case 2:
-                _appBarTitle = "个人";
+                _appBarTitle = "我的";
                 break;
             }
           });
@@ -49,7 +49,7 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
         children: const [
           Mainpage(),
           WellCoverLogPage(),
-          Mainpage(),
+          ProfilePage1(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -85,6 +85,6 @@ const _navBarItems = [
   NavigationDestination(
     icon: Icon(Icons.person_outline_rounded),
     selectedIcon: Icon(Icons.person_rounded),
-    label: '个人',
+    label: '我的',
   ),
 ];

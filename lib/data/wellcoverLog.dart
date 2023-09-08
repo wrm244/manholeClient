@@ -2,7 +2,7 @@ class WellCoverLog {
   int logID;
   int wellCoverID;
   DateTime dateTime;
-  String status;
+  int status;
   String? location;
   int? recognitionResult;
   int? cameraID;
