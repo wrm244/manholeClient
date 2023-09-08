@@ -2,7 +2,7 @@
 import 'bar.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 导入shared_preferences包
-import 'database.dart';
+import '../services/database.dart';
 
 class SignInPage2 extends StatelessWidget {
   const SignInPage2({Key? key}) : super(key: key);
@@ -188,7 +188,6 @@ class __FormContentState extends State<_FormContent> {
                         bool isUserExists = await databaseHelper.isUserExists(
                             _username, _password);
                         await databaseHelper.closeConnection();
-
                         if (isUserExists) {
                           final prefs = await SharedPreferences.getInstance();
                           prefs.setBool('isLoggedIn', _rememberMe);

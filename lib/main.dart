@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
-import 'mainpage.dart';
+import 'screens/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/bar.dart';
 
 void main() => runApp(const MyApp());
 
@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
       });
       if (isLoggedIn) {
         navigatorKey.currentState?.pushReplacement(MaterialPageRoute(
-          builder: (context) => const Mainpage(),
+          builder: (context) => const Material3BottomNav(),
         ));
       }
     });

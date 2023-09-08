@@ -1,4 +1,5 @@
 import 'package:mysql1/mysql1.dart';
+import '../data/wellcoverLog.dart';
 
 class DatabaseHelper {
   late MySqlConnection _conn;
@@ -28,6 +29,32 @@ class DatabaseHelper {
     } catch (e) {
       print('Error querying database: $e');
       return false;
+    }
+  }
+
+  Future<List<WellCoverLog>> getWellCoverLogs() async {
+    try {
+      final result = await _conn.query('SELECT * FROM wellcoverlogs');
+      final logs = <WellCoverLog>[];
+      print('result: $result');
+      for (var row in result) {
+        final log = WellCoverLog(
+          logID: row['LogID'],
+          wellCoverID: row['WellCoverID'],
+          dateTime: row['DateTime'],
+          status: row['Status'],
+          location: row['Location'],
+          recognitionResult: row['RecognitionResult'],
+          cameraID: row['CameraID'],
+          algorithmVersion: row['AlgorithmVersion'],
+          additionalInfo: row['AdditionalInfo'],
+        );
+        logs.add(log);
+      }
+      return logs;
+    } catch (e) {
+      print('Error querying wellcoverlogs table: $e');
+      return [];
     }
   }
 
