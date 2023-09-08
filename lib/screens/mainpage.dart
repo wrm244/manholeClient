@@ -42,7 +42,6 @@ class _Mainpage extends State<Mainpage> {
 
     // Platform messages may fail, so we use a try/catch PlatformException.
     jpush.getRegistrationID().then((rid) {
-      print("flutter get registration id : $rid");
       setState(() {
         debugLable = "flutter getRegistrationID: $rid";
       });
@@ -296,10 +295,11 @@ class CameraSelectionButton extends StatefulWidget {
   final List<Camera> cameras; // 摄像头URL列表
   final Function(String) onCameraSelected; // 回调函数，用于选择摄像头
 
-  CameraSelectionButton(
-      {required this.cameras, required this.onCameraSelected});
+  const CameraSelectionButton(
+      {super.key, required this.cameras, required this.onCameraSelected});
 
   @override
+  // ignore: library_private_types_in_public_api
   _CameraSelectionButtonState createState() => _CameraSelectionButtonState();
 }
 

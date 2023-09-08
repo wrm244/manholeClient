@@ -11,6 +11,7 @@ class ProfilePage1 extends StatefulWidget {
   // ignore: use_key_in_widget_constructors
   const ProfilePage1({Key? key});
   @override
+  // ignore: library_private_types_in_public_api
   _ProfilePage1State createState() => _ProfilePage1State();
 }
 

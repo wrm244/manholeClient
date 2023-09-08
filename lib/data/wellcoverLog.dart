@@ -1,3 +1,4 @@
+// ignore: file_names
 class WellCoverLog {
   int logID;
   int wellCoverID;
