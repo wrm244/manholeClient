@@ -1,10 +1,8 @@
 // ignore_for_file: avoid_print
-
+import 'bar.dart';
 import 'package:flutter/material.dart';
-import 'mainpage.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 导入shared_preferences包
 import 'database.dart';
-import 'package:mysql1/mysql1.dart';
 
 class SignInPage2 extends StatelessWidget {
   const SignInPage2({Key? key}) : super(key: key);
@@ -170,68 +168,46 @@ class __FormContentState extends State<_FormContent> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4)),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text(
-                    '登陆',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4)),
                   ),
-                ),
-                onPressed: () async {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    // 获取SharedPreferences实例
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    late MySqlConnection conn;
-                    try {
-                      conn = await MySqlConnection.connect(ConnectionSettings(
-                        host: 'server.gxist.cn',
-                        port: 3306,
-                        user: 'manhole',
-                        db: 'manhole',
-                        password: 'WiRxFFiBrTcZ4K58',
-                      ));
-                    } catch (e) {
-                      print('Error connecting to database: $e');
-                    }
-                    bool isUserExists = false;
-                    try {
-                      var result = await conn.query(
-                          'select * from admins where username = ? and password = ?',
-                          [_username, _password]);
-                      isUserExists = result.isNotEmpty;
-                    } catch (e) {
-                      print('Error querying database: $e');
-                      isUserExists = false; // 在发生异常时，假设用户名不存在
-                    }
-                    // 检查用户名和密码是否正确
-                    if (isUserExists) {
-                      if (_rememberMe) {
-                        prefs.setBool('isLoggedIn', true);
-                      } else {
-                        prefs.setBool('isLoggedIn', false);
+                  child: const Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: Text(
+                      '登陆',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  onPressed: () async {
+                    if (_formKey.currentState?.validate() ?? false) {
+                      final databaseHelper = DatabaseHelper();
+
+                      if (await databaseHelper.connect()) {
+                        bool isUserExists = await databaseHelper.isUserExists(
+                            _username, _password);
+                        await databaseHelper.closeConnection();
+
+                        if (isUserExists) {
+                          final prefs = await SharedPreferences.getInstance();
+                          prefs.setBool('isLoggedIn', _rememberMe);
+                          // ignore: use_build_context_synchronously
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                            builder: (context) => const Material3BottomNav(),
+                          ));
+                        } else {
+                          // ignore: use_build_context_synchronously
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('用户名或密码不正确'),
+                            ),
+                          );
+                        }
                       }
-                      // 导航到Mainpage
-                      // ignore: use_build_context_synchronously
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const Mainpage(),
-                      ));
-                    } else {
-                      // 用户名或密码不匹配，显示错误消息
-                      // ignore: use_build_context_synchronously
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('用户名或密码不正确'),
-                        ),
-                      );
                     }
-                  }
-                },
-              ),
+                  }),
             ),
           ],
         ),
