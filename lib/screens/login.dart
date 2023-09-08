@@ -112,7 +112,7 @@ class __FormContentState extends State<_FormContent> {
               decoration: const InputDecoration(
                 labelText: '用户名',
                 hintText: '请输入用户名',
-                prefixIcon: Icon(Icons.email_outlined),
+                prefixIcon: Icon(Icons.person_outline_rounded),
                 border: OutlineInputBorder(),
               ),
             ),

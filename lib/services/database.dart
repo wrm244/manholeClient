@@ -33,7 +33,8 @@ class DatabaseHelper {
 
   Future<List<WellCoverLog>> getWellCoverLogs() async {
     try {
-      final result = await _conn.query('SELECT * FROM wellcoverlogs');
+      final result =
+          await _conn.query('SELECT * FROM wellcoverlogs ORDER BY Status DESC');
       final logs = <WellCoverLog>[];
       for (var row in result) {
         final log = WellCoverLog(
