@@ -15,6 +15,11 @@
 <img src="https://github.com/wrm244/manholeClient/assets/54385511/eb343c57-c245-432e-89a0-8f24a1fd3e10" width="400"  alt="1"/>
 <img src="https://github.com/wrm244/manholeClient/assets/54385511/b27a492a-7018-47b4-bf5d-9b220a7d40d3" width="400"  alt="1"/>
 
+## 数据库设计
+
+![image](https://github.com/wrm244/manholeClient/assets/54385511/1cd7801b-6f0c-4eef-b406-0542d4529055)
+
+
 ## lib文件夹组织
 
 ```bash
